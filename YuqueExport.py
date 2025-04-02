@@ -9,7 +9,7 @@ from pyuque.client import Yuque
 from huepy import *
 from prettytable import PrettyTable
 import functools
-
+import uuid
 
 # 获取仓库列表
 def get_repos(user_id):
@@ -107,8 +107,11 @@ async def download_md(repo_id, repo_name, doc_id, doc_title, doc_path):
             annex_name = annex[1]  # 附件名称 xxx.zip
             annex_url = re.findall(r'\((https:\/\/.*?)\)', annex_body)  # 从附件代码中提取附件链接
             annex_url = annex_url[0].replace("/attachments/", "/api/v2/attachments/")  # 替换为附件API
-            local_abs_path = f"{assets_dir}/{annex_name}"  # 保存附件的绝对路径
-            local_md_path = f"[{annex_name}](assets/{annex_name})"  # 附件相对路径完整代码
+            unique_id = uuid.uuid4() # 生成 UUID 并去掉连字符（可选）
+            file_name, file_extension = os.path.splitext(annex_name)  # 分离文件名和扩展名
+            new_annex_name = f"{file_name}_{unique_id}{file_extension}"  # 拼接新的文件名
+            local_abs_path = f"{assets_dir}/{new_annex_name}"  # 保存附件的绝对路径
+            local_md_path = f"[{annex_name}](assets/{new_annex_name})"  # 附件相对路径完整代码
             await download_annex(annex_url, local_abs_path)  # 下载附件
             body = body.replace(annex_body, local_md_path)  # 替换链接
 
